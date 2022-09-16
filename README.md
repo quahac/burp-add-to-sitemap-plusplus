@@ -15,3 +15,10 @@ Install Extension:
 Burp Suite > Extender > Extensions > Add > Extension type: Python > Extension file: Add_Sitemap++.py > Next
 ```
 >Credits for [Nixawk's script](https://github.com/nixawk/hello-python2/blob/master/burpsuite/sitemap-Import_links.py) helped me a lot. But I needed more files and clipboard with regex to be supported. Regex found on internet multiple locations (credits for the founder) can’t find it anymore, but you can try on https://regex101.com/r/pNc2cC/1 and fixed freely 😊. 
+
+Demo:
+
+
+
+https://user-images.githubusercontent.com/49560894/190729659-4cfa20d8-4434-43c2-8456-30d99a630c19.mp4
+
