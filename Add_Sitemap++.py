@@ -19,7 +19,7 @@ from java.awt.datatransfer import DataFlavor, UnsupportedFlavorException
 class BurpExtender(IBurpExtender, IContextMenuFactory):
     
     selectedUrls = []
-    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))" # if you have a better one change freely
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))" # if you have a better one change freely 
     
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
