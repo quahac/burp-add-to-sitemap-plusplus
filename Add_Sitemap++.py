@@ -19,7 +19,7 @@ from java.awt.datatransfer import DataFlavor, UnsupportedFlavorException
 class BurpExtender(IBurpExtender, IContextMenuFactory):
     
     selectedUrls = []
-    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))" # if you have a better one change freely 
+    regex = r"(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'\".,<>?«»“”‘’]))" # if you have a better one change freely
     
     def registerExtenderCallbacks(self, callbacks):
         self.callbacks = callbacks
@@ -64,17 +64,19 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
         content = Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor)
         regex = self.regex
         testregex = re.findall(regex, content)
-        count = 0
+        count_urls = 0 
+        count_match = 0
         for url in testregex:
+          count_urls += 1
           for selectedurls in self.selectedUrls:
             if(re.match("^https?://"+selectedurls+".+", str(url[0]))):
-               self.callbacks.printOutput(str(url[0]))
+               # self.callbacks.printOutput(str(url[0]))
                t = threading.Thread(target=self.sitemap_importer, args=[str(url[0])])
                t.daemon = True
                t.start()
-               count += 1
-        self.callbacks.printOutput(str(count) +' unique urls imported from clipboard')
-        self.callbacks.printOutput("searching for:\n----------\n"+"\n".join(self.selectedUrls)+"\n----------")        
+               count_match += 1
+        self.callbacks.printOutput("Looking for host(s) ["+", ".join(self.selectedUrls)+ "] and found " + str(count_match) + " unique url(s) from clipboard and imported in sitemap!")
+        self.callbacks.printError(str(count_urls - count_match) + " url(s) didn't match selected sitemap host(s) and not imported from clipboard!")      
         return
 
     def sitemap_importer_from_file(self):
@@ -94,18 +96,20 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
                         content += str(contents)
                         f.close()          
             testregex = re.findall(regex, content)
-            count = 0
+            count_urls = 0 
+            count_match = 0
             for url in testregex:
+                count_urls += 1
                 for selectedurls in self.selectedUrls:
                     if(re.match("^https?://"+selectedurls+".+", str(url[0]))):
-                        self.callbacks.printOutput(str(url[0]))
+                        # self.callbacks.printOutput(str(url[0]))
                         t = threading.Thread(target=self.sitemap_importer, args=[str(url[0])])
                         t.daemon = True
                         t.start()
-                        count += 1
+                        count_match += 1
             zip.close()
-            self.callbacks.printOutput(str(count) +' unique urls imported')
-            self.callbacks.printOutput("searching for:\n----------\n"+"\n".join(self.selectedUrls)+"\n----------")       
+            self.callbacks.printOutput("Looking for host(s) ["+", ".join(self.selectedUrls)+ "] and found " + str(count_match) + " unique url(s) from zipped file and imported in sitemap!")
+            self.callbacks.printError(str(count_urls - count_match) + " url(s) didn't match selected sitemap host(s) and not imported from zipped file!")           
         else:
             # Not a zipped file then
             if filename and os.path.exists(filename):
@@ -114,20 +118,22 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
                    testregex = re.findall(regex, url)
                    if(len(testregex)> 0):
                      urls.append(testregex[0][0])     
-                unique = set(urls) 
-                count = 0
-                for url in unique: 
+                unique = set(urls)
+                count_urls = 0
+                count_match = 0
+                for url in unique:
+                    count_urls += 1 
                     for selectedurls in self.selectedUrls:
                         if(re.match("^https?://"+selectedurls+".+", url)):
-                            self.callbacks.printOutput(url) 
+                            # self.callbacks.printOutput(url) 
                             t = threading.Thread(target=self.sitemap_importer, args=[url])
                             t.daemon = True
                             t.start()
-                            count += 1
+                            count_match += 1
             file.close()
-            self.callbacks.printOutput(str(count) +' unique urls imported')
-            self.callbacks.printOutput("searching for:\n----------\n"+"\n".join(self.selectedUrls)+"\n----------")      
-   
+            self.callbacks.printOutput("Looking for host(s) ["+", ".join(self.selectedUrls)+ "] and found " + str(count_match) + " unique url(s) from file and imported in sitemap!")
+            self.callbacks.printError(str(count_urls - count_match) + " url(s) didn't match selected sitemap host(s) and not imported from file!")
+
     def sitemap_importer(self, http_url):
         sitemapUrl = URL(http_url)
         port = 443 if sitemapUrl.protocol == 'https' else 80
@@ -135,4 +141,3 @@ class BurpExtender(IBurpExtender, IContextMenuFactory):
         httpService = self.helpers.buildHttpService(sitemapUrl.host, port, sitemapUrl.protocol)
         httpRequest = self.helpers.buildHttpRequest(URL(http_url))
         self.callbacks.addToSiteMap(self.callbacks.makeHttpRequest(httpService, httpRequest))
-
